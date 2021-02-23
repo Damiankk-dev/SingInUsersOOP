@@ -1,0 +1,81 @@
+klasa użytkownik:
+	int id oparte na static
+	string nazwa
+	string haslo
+	static const string nazwa pliku
+	
+	
+Do stworzenia użytkownika potrzebuję 
+
+	podania nazwy użytkownika
+		pobieranie czegoś to też uniwersalne zachowanie, bo pobieramy i haslo i nazwe uzytkownika
+		tu musi być jakaś możliwosć porównania z bazą użytkowników, 
+		czyli klasa sobie otwiera plik i sprawdza
+	A może by tak klasę BazaUżytkowników?
+		i tam metody, które obsługują działanie na pliku
+		i wtedy dziedziczenie z tej metody lub ta metoda dziedziczy, jeszcze nie wiem xD
+		Nie, to klasa User dziedziczy z Bazy
+		Ale chyba niekoniecznie to byłoby połączone przez dziedziczenie, jakoś swita mi tu szablon
+		albo przyjaźń, bo dziedziczenie to raczej bez sensu
+		Szablon wydaje się być mocno sensowny, ale raczej szablon metody w klasie niż całej klasy
+		czyli:
+			class SavedRegisteredUsersInterface
+				do metod, które chcę zdefiniować będę potrzebował zmiennych:
+					Klasa, której zmienne "udostępnione" mogę zapisać w postaci stringa rozdzielonego separatorem
+						a może stworzyć taką metodę w klasie obsługującej interfejs i z poziomu klasy eksportującej
+						dane wysłać (np poprzez przyjaźń) do tego interfejsu wybrane dane
+						czyli:
+							Tworzę interfejs(klasę) do obsługi plików
+							Tworzę w niej publiczną metodę do łączenia ich w spójny element
+							(np string rozdzielony ustalonym separatorem)
+							w przypadku zapisywania do plików, wygodne wydaje się być przekazywanie wektora stringów
+							
+				porownywanie wejsciowego usera z baza
+					może ciekawie by było przekazać jakiś szablon tego jak zapisane
+					są składoawe wektora stringów i chcąc wyszukać np nazwy uzytkownika
+					pobieram "typ" wyszukiwanej informacji i wartość do porównania 
+					(ciekawe czy miałaby sens taka optymalizacja, że przy chęci przeszukania
+					bazy, tworzę w metodzie mapę <iterator, wartości"typu"> i póżniej 
+					przeszukuję mapę podając szukaną wartość z danego "typu")
+					To mogoby być szybsze niż preszukiwanie wektora 
+					Wynikiem tej metody powinien być user, jeżeli znalazł się w bazie, 
+						jeżeli nie, to jakiś pusty, domyślny
+						
+				przeszukiwanie bazy po nazwach usera i porownywanie hasla
+					to przy logowaniu, czyli użyliśmy metody powyżej
+				odczytywanie ostatniego id 
+					każda ingerencja w bazę powinna się kończyć aktualizacją tej zmiennej
+				zapisanie pobranej próbki do pliku
+					
+				zapytanie o odczytanie próbki z pliku
+					Przeszukanie pliku pod kątem istnienia próbki o takich danych
+					
+			PODSUMOWANIE:
+				
+				typ w jakim przyjmowane będą dane:
+					wektor stringów
+				Zrobię najpierw klasę dziedziczącą z usera
+				Po prostu zrobię metody w userze
+				
+				Wektor z użytkownikami
+				Odczytywanie użytkowników
+				Zapisywanie użytkowników
+				Obsługa pliku w ramach jednego użytkownika
+				Praca na wektorze użytkowników poza plikiem
+				Metoda klasy zwraca użytkownika
+				Przechowuję mapę z użytkownikami w pamięci
+				
+		
+	podania hasła
+		tu prosta weryfikacja długości hasła
+		
+	odczytania ostatniego id
+	
+	
+Tworzenie klasy:
+	Plan
+	Zmienne
+	Metody
+	Konstruktor
+	
+	Na początek
