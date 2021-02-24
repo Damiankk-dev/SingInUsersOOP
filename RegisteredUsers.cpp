@@ -1,19 +1,154 @@
 #include "RegisteredUsers.h"
 
-void RegisteredUsers::split(const std::string &s, char delim, std::vector<std::string> &elems) {
+//RegisteredUsers::RegisteredUsers(std::map<std::string, std::pair<std::string, int> > regUsrs){
+//    std::pair<std::string, int> samplePair("none", 0);
+//    regUsrs["user"] = samplePair;
+//}
+
+RegisteredUsers::RegisteredUsers()
+    : registeredUsers()
+{
+}
+void RegisteredUsers::split(const std::string &s, char delim, std::vector<std::string> &elems)
+{
     std::stringstream ss(s);
     std::string item;
-    while (getline(ss, item, delim)) {
+    while (getline(ss, item, delim))
+    {
         elems.push_back(item);
     }
 }
-std::vector<std::string> RegisteredUsers::split(const std::string &s, char delim) {
+std::vector<std::string> RegisteredUsers::split(const std::string &s, char delim)
+{
     std::vector<std::string> elems;
-    split(s, delim, elems);
+    RegisteredUsers::split(s, delim, elems);
     return elems;
 }
 
 const std::string RegisteredUsers::SIGNED_USERS_FILEPATH = "signedInUsers.txt";
+
+
+void RegisteredUsers::createUser()
+{
+    std::string newUser;
+    newUser = createCorrectUsername(registeredUsers);
+    lastUserId++;
+    std::string newPassword = RegisteredUsers::getCorrectPassword();
+    std::pair<std::string, int> samplePair(newPassword, lastUserId);
+    registeredUsers[newUser] = samplePair;
+    saveUserData2File(newUser);
+//    return newUser;
+}
+std::string RegisteredUsers::createCorrectUsername(std::map<std::string, std::pair<std::string, int> > &registeredUsers)
+{
+    bool confirmUsername = false;
+    do
+    {
+        std::string newUsername = getUsername();
+        confirmUsername = isInsertedUsernameCorrect(registeredUsers, newUsername);
+        if (confirmUsername == true)
+        {
+            std::cout << "Poprawnie dodano uzytkownika\n";
+//            userId = registeredUsers.size();
+            return newUsername;
+        }
+        else
+        {
+            std::cout << "Taki uzytkownik juz istnieje\n";
+            std::cout << "Podaj inny login\n";
+        }
+    }
+    while(confirmUsername == false);
+    return "";
+}
+
+std::string RegisteredUsers::getUsername()
+{
+    std::string inputUsername;
+    std::cout << "Podaj login\n";
+    getline(std::cin, inputUsername);
+    return inputUsername;
+}
+bool RegisteredUsers::isInsertedUsernameCorrect(std::map<std::string, std::pair<std::string, int> > &registeredUsers, std::string& username)
+{
+    std::pair<std::map<std::string, std::pair<std::string, int> >::iterator,bool> ret;
+    std::pair<std::string, int> defaultPair("", 0);
+    ret = registeredUsers.insert(
+              std::pair<std::string, std::pair<std::string, int>>(username, defaultPair));
+    return ret.second;
+}
+std::string RegisteredUsers::getPassword()
+{
+    std::string inputPass;
+    std::cout << "Podaj haslo\n";
+    getline(std::cin, inputPass);
+    return inputPass;
+}
+bool RegisteredUsers::isPasswordCorrect(std::string& password)
+{
+    int passLength = password.length();
+    if (passLength >= 4) return true;
+    else return false;
+}
+
+std::string RegisteredUsers::getCorrectPassword()
+{
+    unsigned int wrongPasswordApproach = 0;
+    std::string inputPass ;
+    do
+    {
+        wrongPasswordApproach++;
+        inputPass = getPassword();
+        if (isPasswordCorrect(inputPass))
+        {
+            return inputPass;
+        }
+        else
+        {
+            std::cout << "Haslo musi posiadac przynajmniej 4 znaki\n";
+        }
+    }
+    while (isPasswordCorrect(inputPass) == false);
+    return "";
+}
+void RegisteredUsers::saveUserData2File(std::string &user)
+{
+    std::fstream file;
+    file.open(RegisteredUsers::SIGNED_USERS_FILEPATH, std::ios::out | std::ios::app);
+    std::map<std::string, std::pair<std::string, int> > ::iterator userItr;
+    userItr = registeredUsers.find(user);
+    file << userItr->second.second << '|';
+    file << userItr->first << '|';
+    file << userItr->second.first << '\n';
+    file.close();
+}
+void RegisteredUsers::loadRegisteredUsers()
+{
+    std::fstream inputFile;
+    std::string temp;
+    std::vector<std::string> userDataLine;
+    inputFile.open(RegisteredUsers::SIGNED_USERS_FILEPATH, std::ios::in);
+    if ( !(inputFile.good()) )
+    {
+        std::cout <<  "Unable to open file!\n";
+    }
+    else
+    {
+        while(getline(inputFile, temp))
+        {
+            userDataLine = RegisteredUsers::split(temp, '|');
+            std::string loadedUser = userDataLine[1];
+            std::string loadedPass = userDataLine[2];
+            int loadedId = stoi(userDataLine[0]);
+            std::pair<std::string, int> userData (loadedPass, loadedId);
+            registeredUsers[loadedUser] = userData;
+            if (loadedId > lastUserId) lastUserId = loadedId;
+        }
+        inputFile.close();
+    }
+
+}
+
 
 //std::vector<std::string> RegisteredUsers::loadRegisteredUsers() {
 //    std::ifstream inputFile(RegisteredUsers::SIGNED_USERS_FILEPATH);
@@ -36,84 +171,6 @@ const std::string RegisteredUsers::SIGNED_USERS_FILEPATH = "signedInUsers.txt";
 //    }
 //    return registeredUsersIds;
 //}
-
-//
-
-
-std::string RegisteredUsers::getUsername() {
-    std::string inputUsername;
-    std::cout << "Podaj login\n";
-    getline(std::cin, inputUsername);
-    return inputUsername;
-}
-bool RegisteredUsers::isInsertedUsernameCorrect(std::map<std::string, std::pair<std::string, int> > &registeredUsers, std::string& username) {
-    std::pair<std::map<std::string, std::pair<std::string, int> >::iterator,bool> ret;
-    std::pair<std::string, int> defaultPair("", 0);
-    ret = registeredUsers.insert(
-              std::pair<std::string, std::pair<std::string, int>>(username, defaultPair));
-    return ret.second;
-}
-std::string RegisteredUsers::getPassword() {
-    std::string inputPass;
-    std::cout << "Podaj haslo\n";
-    getline(std::cin, inputPass);
-    return inputPass;
-}
-bool RegisteredUsers::isPasswordCorrect(std::string& password) {
-    int passLength = password.length();
-    if (passLength >= 4) return true;
-    else return false;
-}
-//std::string createUser(std::map<std::string, std::pair<std::string, int> > &registeredUsers) {
-//    std::string newUser;
-//    newUser = RegisteredUsers::createCorrectUsername(registeredUsers);
-//    registeredUsers[newUser] = getCorrectPassword();
-//    saveUserData2File(registeredUsers, newUser);
-//    return newUser;
-//}
-
-std::string RegisteredUsers::createCorrectUsername(std::map<std::string, std::pair<std::string, int> > &registeredUsers) {
-    bool confirmUsername = false;
-    do {
-        std::string newUsername = getUsername();
-        confirmUsername = isInsertedUsernameCorrect(registeredUsers, newUsername);
-        if (confirmUsername == true) {
-            std::cout << "Poprawnie dodano uzytkownika\n";
-//            userId = registeredUsers.size();
-            return newUsername;
-        } else {
-            std::cout << "Taki uzytkownik juz istnieje\n";
-            std::cout << "Podaj inny login\n";
-        }
-    } while(confirmUsername == false);
-    return "";
-}
-std::string RegisteredUsers::getCorrectPassword() {
-    unsigned int wrongPasswordApproach = 0;
-    std::string inputPass ;
-    do {
-        wrongPasswordApproach++;
-        inputPass = getPassword();
-        if (isPasswordCorrect(inputPass)) {
-            return inputPass;
-        } else {
-            std::cout << "Haslo musi posiadac przynajmniej 4 znaki\n";
-        }
-    } while (isPasswordCorrect(inputPass) == false);
-    return "";
-}
-//void saveUserData2File(std::map<std::string, std::string>& registeredUsers, std::string &user) {
-//    std::string fileName = "zarejestrowani_uzytkownicy.txt";
-//    std::fstream file;
-//    file.open(fileName, std::ios::out | std::ios::app);
-//    std::map<std::string, std::string>::iterator userItr;
-//    userItr = registeredUsers.find(user);
-//    file << registeredUsers.size() << '|';
-//    file << userItr->first << '|';
-//    file << userItr->second << '\n';
-//    file.close();
-//}
-
 //std::map<std::string, std::string>::iterator getRegisteredUser(std::map<std::string, std::string>& registeredUsers) {
 //    std::map<std::string, std::string>::iterator usernameItr;
 //    do {
@@ -154,4 +211,9 @@ std::string RegisteredUsers::getCorrectPassword() {
 //    std::string newPassword = getCorrectPassword();
 //    usernameItr->second = newPassword;
 //}
+
+
+
+
+//
 
