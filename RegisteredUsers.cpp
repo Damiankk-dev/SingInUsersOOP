@@ -8,6 +8,7 @@
 RegisteredUsers::RegisteredUsers()
     : registeredUsers()
 {
+    loadRegisteredUsers();
 }
 void RegisteredUsers::split(const std::string &s, char delim, std::vector<std::string> &elems)
 {
@@ -37,7 +38,7 @@ void RegisteredUsers::createUser()
     std::pair<std::string, int> samplePair(newPassword, lastUserId);
     registeredUsers[newUser] = samplePair;
     saveUserData2File(newUser);
-//    return newUser;
+    std::cout << "Poprawnie dodano uzytkownika: " << newUser << "\n";
 }
 std::string RegisteredUsers::createCorrectUsername(std::map<std::string, std::pair<std::string, int> > &registeredUsers)
 {
@@ -49,7 +50,6 @@ std::string RegisteredUsers::createCorrectUsername(std::map<std::string, std::pa
         if (confirmUsername == true)
         {
             std::cout << "Poprawnie dodano uzytkownika\n";
-//            userId = registeredUsers.size();
             return newUsername;
         }
         else
@@ -146,74 +146,58 @@ void RegisteredUsers::loadRegisteredUsers()
         }
         inputFile.close();
     }
-
+}
+std::string RegisteredUsers::getRegisteredUser() {
+    std::map<std::string, std::pair<std::string, int> > ::iterator userItr;
+    std::string userToLogIn = "\0";
+    do {
+        userToLogIn = getUsername();
+        userItr = RegisteredUsers::registeredUsers.find(userToLogIn);
+        if (userItr == RegisteredUsers::registeredUsers.end()) {
+            std::cout << "Uzytkownik o podanym loginie nie istnieje, podaj wlasciwy login\n";
+        }
+    } while (userItr == RegisteredUsers::registeredUsers.end());
+    return userToLogIn;
 }
 
-
-//std::vector<std::string> RegisteredUsers::loadRegisteredUsers() {
-//    std::ifstream inputFile(RegisteredUsers::SIGNED_USERS_FILEPATH);
-//    std::string temp;
-//    std::vector<std::string> registeredUsersIds;
-//    inputFile.open(RegisteredUsers::SIGNED_USERS_FILEPATH, std::ios::in);
-//    if ( !(inputFile.good()) ){
-//        std::cout <<  "Unable to open file!\n";
-//        registeredUsersIds[0] = "\0";
-//    }
-//    else {
-//        while(getline(inputFile, temp)) {
-//        //        userDataLine = split(temp, '|');
-//        //        std::string loadedUser = userDataLine[1];
-//        //        registeredUsersIds.push_back(loadedUser);
-//        //        registeredUsers[loadedUser] = userDataLine[2];
-//        //        getline(file, temp);
-//        }
-//        inputFile.close();
-//    }
-//    return registeredUsersIds;
-//}
-//std::map<std::string, std::string>::iterator getRegisteredUser(std::map<std::string, std::string>& registeredUsers) {
-//    std::map<std::string, std::string>::iterator usernameItr;
-//    do {
-//        std::string userToLogIn = getUsername();
-//        usernameItr = registeredUsers.find(userToLogIn);
-//        if (usernameItr == registeredUsers.end()) {
-//            std::cout << "Uzytkownik o podanym loginie nie istnieje, podaj wlasciwy login\n";
-//        }
-//    } while (usernameItr == registeredUsers.end());
-//    return usernameItr;
-//}
-//bool isPasswordMatch(std::map<std::string, std::string>::iterator &usernameItr) {
-//    std::string password = getPassword();
-//    if (usernameItr->second == password) return true;
-//    else return false;
-//}
-//bool isPasswordVerified(std::map<std::string, std::string>::iterator &usernameItr) {
-//    unsigned int wrongPasswordAttempt = 0;
-//    while (isPasswordMatch(usernameItr) == false ) {
-//        wrongPasswordAttempt++;
-//        if (wrongPasswordAttempt >= 3) {
-//            std::cout << "Blednie wpisano haslo 3 razy, nalezy odczekac 5 sekund\n";
-//            wrongPasswordAttempt = 0;
-//            Sleep(5000);
-//        }
-//    }
-//    return true;
-//}
-//std::map<std::string, std::string>::iterator getSignedInUser (std::map<std::string, std::string>& registeredUsers) {
-//    std::map<std::string, std::string>::iterator usernameItr;
-//    usernameItr = getRegisteredUser(registeredUsers);
-//    if (usernameItr != registeredUsers.end() ) {
-//        if (isPasswordVerified(usernameItr) ) return usernameItr;
-//    } else return registeredUsers.end();
-//    return usernameItr;
-//}
-//void changePassword(std::map<std::string, std::string>::iterator &usernameItr) {
-//    std::string newPassword = getCorrectPassword();
-//    usernameItr->second = newPassword;
-//}
-
-
-
-
-//
+bool RegisteredUsers::isPasswordMatch(std::string username) {
+    std::string password = getPassword();
+    std::string userPassword = RegisteredUsers::registeredUsers[username].first;
+    if (userPassword == password) return true;
+    else return false;
+}
+bool RegisteredUsers::isPasswordVerified(std::string userToSingIn) {
+    unsigned int wrongPasswordAttempt = 0;
+    while (isPasswordMatch(userToSingIn) == false ) {
+        wrongPasswordAttempt++;
+        if (wrongPasswordAttempt >= 3) {
+            std::cout << "Blednie wpisano haslo 3 razy, nalezy odczekac 5 sekund\n";
+            wrongPasswordAttempt = 0;
+            Sleep(5000);
+        }
+    }
+    return true;
+}
+std::vector<std::string> RegisteredUsers::getSignedInUser () {
+    std::vector<std::string> signedInUserData;
+    std::string user2SingIn;
+    user2SingIn = RegisteredUsers::getRegisteredUser();
+    if (user2SingIn != "\0" ) {
+        if (RegisteredUsers::isPasswordVerified(user2SingIn) ) {
+        signedInUserData.push_back(user2SingIn);
+        signedInUserData.push_back(RegisteredUsers::registeredUsers[user2SingIn].first);
+        signedInUserData.push_back(std::to_string(RegisteredUsers::registeredUsers[user2SingIn].second));
+        }
+    } else {
+        signedInUserData.push_back(user2SingIn);
+        signedInUserData.push_back("none");
+        signedInUserData.push_back(0);
+    }
+    return signedInUserData;
+}
+void RegisteredUsers::changePassword(std::string belongToUser) {
+    std::string newPassword = getCorrectPassword();
+    RegisteredUsers::registeredUsers[belongToUser].first = newPassword;
+    saveUserData2File(belongToUser);
+}
 

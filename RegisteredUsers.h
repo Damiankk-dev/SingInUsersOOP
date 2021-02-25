@@ -36,8 +36,12 @@ RegisteredUsers();
     std::string getCorrectPassword();
     void saveUserData2File(std::string &user);
     void loadRegisteredUsers();
-
     bool verifyPassword(std::string username);
+    std::string getRegisteredUser();
+    bool isPasswordMatch(std::string username);
+    bool isPasswordVerified(std::string username);
+    std::vector<std::string> getSignedInUser ();
+    void changePassword(std::string belongToUser);
 
 //    UniqueUser lookupUser(std::string username);
 
